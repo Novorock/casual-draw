@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    </meta>
+    <link href="./index.css" rel="stylesheet">
+    </link>
+</head>
+
+<body>
+    <div id="root">
+        <div id="main">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div id="sidebar">
+            <div id="playbar-container">
+                <div id="playbar">
+                    <div id="btn-bar">
+                        <div>
+                            <button id="play-btn" class="btn">
+                                <div></div>
+                            </button>
+                        </div>
+
+                        <div>
+                            <button id="pause-btn" class="btn">
+                                <div></div>
+                            </button>
+                        </div>
+
+                        <div>
+                            <button id="forward-btn" class="btn">
+                                <div></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="slider-container">
+                        <div>
+                            <span>Iteration: </span><span id="iteration-count">2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="parameter-container">
+                <div class="parameter-row">
+                    <div class="parameter-label-col">
+                        <span>k:</span>
+                    </div>
+
+                    <div class="parameter-input-col">
+                        <input id="k-input" type="range" class="parameter-input slider">
+                    </div>
+
+                    <div class="parameter-value-col">
+                        <span id="k-value"></span>
+                    </div>
+                </div>
+
+                <div class="parameter-row">
+                    <div class="parameter-label-col">
+                        <span>Δ:</span>
+                    </div>
+
+                    <div class="parameter-input-col">
+                        <input id="delta-input" type="range" class="parameter-input slider">
+                    </div>
+
+                    <div class="parameter-value-col">
+                        <span id="delta-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./src/minpubsub.js"></script>
+    <script src="./src/util.js"></script>
+    <script type="module" src="./src/index.js"></script>
+</body>
+
+</html>
