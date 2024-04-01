@@ -1,55 +1,66 @@
-import { Node } from "./node.js";
-import { Edge } from "./edge.js";
+export function Node(id, x, y) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.r = 15;
+    this.label = `${id}`;
+    this.color = "#aaaaaa";
+}
 
-export function Graph(count) {
+Node.prototype.draw = function(ctx) {
+    ctx.beginPath();
+    ctx.fillStyle = this.color;
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "black";
+    ctx.font = "20px serif";
+    
+    const metrics = ctx.measureText(this.id);
+    const w = metrics.width;
+
+    ctx.fillText(this.id, this.x - w / 2, this.y + 5);
+
+    ctx.fillStyle = "#000000";
+}
+
+export function Edge(id, fromNode, toNode) {
+    this.id = id;
+    this.from = fromNode;
+    this.to = toNode;
+    this.color = "#dfe4ec";
+}
+
+Edge.prototype.draw = function(ctx) {
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "square";
+
+    ctx.beginPath();
+    ctx.moveTo(this.from.x, this.from.y);
+    ctx.lineTo(this.to.x, this.to.y);
+    ctx.stroke();
+    ctx.closePath();
+};
+
+export function Graph(adjacency) {
+    this.adjacency = adjacency;
     this.nodes = [];
     this.edges = [];
+    this.count = adjacency.length;
 
-    // count = 8;
-    // const src = [
-    //     { from: 1, to: 2 },
-    //     { from: 1, to: 3 },
-    //     { from: 1, to: 4 },
-    //     { from: 1, to: 5 },
-    //     { from: 2, to: 4 },
-    //     { from: 2, to: 8 },
-    //     { from: 3, to: 6 },
-    //     { from: 3, to: 8 },
-    //     { from: 4, to: 6 },
-    //     { from: 4, to: 7 }
-    // ];
-    
-    count = 7;
-    const src = [
-        { from: 1, to: 2 },
-        { from: 1, to: 3 },
-        { from: 1, to: 4 },
-        { from: 2, to: 4 },
-        { from: 7, to: 4 },
-        { from: 4, to: 3 },
-        { from: 6, to: 4 },
-        { from: 5, to: 6 },
-        { from: 5, to: 2 },
-        { from: 3, to: 5 },
-        { from: 3, to: 2}
-    ];
-
-    this.adjacency = [...Array(8)].map((v1, i) => {
-        return [...Array(8)].map((v2, j) => { return false; });
-    });
-
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < this.count; i++) {
         this.nodes.push(
-            new Node(`${i}`, 250 * Math.random() + 350, 250 * Math.random() + 300)
+            new Node(`${i + 1}`, 1000 * Math.random(), 900 * Math.random())
         );
     }
 
-    for (let s of src) {
-        this.adjacency[s.from - 1][s.to - 1] = true;
-    }
-
-    for (let i = 0; i < count; i++) {
-        for (let j = 0; j < count; j++) {
+    for (let i = 0; i < this.count; i++) {
+        for (let j = 0; j < this.count; j++) {
             if (this.adjacency[i][j]) {
                 this.edges.push(new Edge(`${i}->${j}`, this.nodes[i], this.nodes[j]));
             }

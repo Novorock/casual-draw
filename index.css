@@ -90,24 +90,24 @@ body {
     margin-top: 15px;
 }
 
-.parameter-row {
+#parameter-container .row {
     display: flex;
     justify-content: flex-start;
     margin-bottom: 5px;
 }
 
-.parameter-label-col {
+#parameter-container .label-col {
     min-width: 20px;
 }
 
-.parameter-input-col {
+#parameter-container .input-col {
     margin-right: 8px;
 }
 
-.parameter-input:disabled, .parameter-input[disabled] {
+#parameter-container input:disabled, #parameter-container input[disabled] {
     opacity: 0.3;
 }
 
-.parameter-value-col {
+#parameter-container .value-col {
     min-width: 30px;
 }
