@@ -40,7 +40,8 @@ body {
     opacity: 1;
 }
 
-#playbar .btn:disabled, .btn[disabled] {
+#playbar .btn:disabled,
+.btn[disabled] {
     opacity: 0.3;
 }
 
@@ -50,15 +51,15 @@ body {
 }
 
 #play-btn>div {
-    background-image: url("./resource/play32.png");
+    background-image: url("./public/play32.png");
 }
 
 #pause-btn>div {
-    background-image: url("./resource/pause32.png");
+    background-image: url("./public/pause32.png");
 }
 
 #forward-btn>div {
-    background-image: url("./resource/forward32.png");
+    background-image: url("./public/forward32.png");
 }
 
 #slider-container {
@@ -104,7 +105,8 @@ body {
     margin-right: 8px;
 }
 
-#parameter-container input:disabled, #parameter-container input[disabled] {
+#parameter-container input:disabled,
+#parameter-container input[disabled] {
     opacity: 0.3;
 }
 

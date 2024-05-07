@@ -111,10 +111,7 @@ function init() {
 function loop(currentTime) {
     elapsedTime = currentTime - oldTime;
     oldTime = currentTime;
-
     layout.update(elapsedTime);
-    // $("#iteration-count").text(layout.iteration);
-
     draw(ctx);
     window.requestAnimationFrame(loop);
 }

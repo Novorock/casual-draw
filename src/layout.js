@@ -94,7 +94,7 @@ export function ForceDirectedLayout(G, k, delta) {
     this.t = 5;
 
     this.iteration = 0;
-    this.animationSpeedScale = 850;
+    this.animationSpeedScale = 250;
     this.s = 0;
 }
 
@@ -257,29 +257,6 @@ LombardiEdge.prototype.init = function (from, mid, to) {
     this.from = from;
     this.mid = mid;
     this.to = to;
-
-    // const x1 = from.x;
-    // const y1 = from.y;
-    // const x2 = to.x;
-    // const y2 = to.y;
-    // const x3 = mid.x;
-    // const y3 = mid.y;
-
-    // let [x0, y0] = circumcircleCenter(x1, y1, x2, y2, x3, y3);
-
-    // let theta1 = angleOf(x1 - x0, y1 - y0);
-    // let theta2 = angleOf(x2 - x0, y2 - y0);
-    // let theta3 = angleOf(x3 - x0, y3 - y0);
-
-    // if ((theta1 > theta3 && theta2 > theta3) || (theta3 > theta1 && theta3 > theta2)) {
-    //     [theta1, theta2] = [Math.max(theta1, theta2) - 2 * Math.PI, Math.min(theta1, theta2)];
-    // }
-
-    // this.x0 = x0;
-    // this.y0 = y0;
-    // this.r = norm(x1 - x0, y1 - y0);
-    // this.theta1 = Math.min(theta1, theta2);
-    // this.theta2 = Math.max(theta1, theta2);
 }
 
 LombardiEdge.prototype.draw = function (ctx) {
