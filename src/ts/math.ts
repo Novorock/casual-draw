@@ -45,6 +45,24 @@ export function dot(v: number[], u: number[]) {
     return v.reduce((accumulator, _, i) => accumulator + v[i] * u[i], 0);
 }
 
+export function det(m: number[][]): number {
+    if (m.length === 1)
+        return m[0][0];
+
+    if (m.length === 2)
+        return m[0][0] * m[1][1] - m[1][0] * m[0][1];
+
+    if (m.length === 3)
+        return m[0][0] * m[1][1] * m[2][2]
+            + m[0][1] * m[1][2] * m[2][0]
+            + m[0][2] * m[1][0] * m[2][1]
+            - m[0][2] * m[1][1] * m[2][0]
+            - m[0][0] * m[1][2] * m[2][1]
+            - m[0][1] * m[1][0] * m[2][2];
+
+    throw new Error("Unsupported operation exception.");
+}
+
 export function linearSolve(A: number[][], b: number[]): number[] {
     if (A.length > 2 || A[0].length > 2)
         throw new Error("Unsupported operation exception.");
@@ -103,8 +121,8 @@ export function circleCenter(points: number[][]): number[] {
     let ma = (y2 - y1) / (x2 - x1);
     const mb = (y3 - y2) / (x3 - x2);
 
-    if (ma === 0)
-        ma = 0.01;
+    if (Math.abs(ma) < 0.001)
+        ma = Math.sign(ma) * 0.001;
 
     let x = 0;
 
@@ -122,9 +140,19 @@ export function circleCenter(points: number[][]): number[] {
 }
 
 export function arcSegmentPoint(points: number[][], line: number[][]): number[] {
-    const [x0, y0] = circleCenter(points);
-    const r = distance([x0 - points[2][0], y0 - points[2][1]]);
-    const leftQ1 = isLeftTriple(points);
+    let [[x1, y1], [x2, y2], [x3, y3]] = points;
+
+    const [ax, ay] = [x2 - x1, y2 - y1];
+
+    if (Math.abs(det([[ax, ay], [x3 - x2, y3 - y2]])) < 0.001) {
+        const l = distance([ax, ay]);
+
+        [x2, y2] = [x2 - 5 * ay / l, y2 + 5 * ax / l];
+    }
+
+    const [x0, y0] = circleCenter([[x1, y1], [x2, y2], [x3, y3]]);
+    const r = distance([x0 - x3, y0 - y3]);
+    const leftQ1 = isLeftTriple([[x1, y1], [x2, y2], [x3, y3]]);
     const [[xa, ya], [xb, yb]] = line;
 
     const d = Math.pow(xa - xb, 2) + Math.pow(ya - yb, 2);
@@ -150,11 +178,7 @@ export function arcSegmentPoint(points: number[][], line: number[][]): number[] 
     if (0 <= t1 && t1 <= 1) {
         let [x, y] = [(1 - t1) * xa + t1 * xb, (1 - t1) * ya + t1 * yb];
 
-        let leftQ2 = isLeftTriple([
-            [points[0][0], points[0][1]],
-            [x, y],
-            [points[2][0], points[2][1]]
-        ]);
+        let leftQ2 = isLeftTriple([[x1, y1], [x, y], [x3, y3]]);
 
         if (leftQ1 === leftQ2)
             return [x, y];
@@ -171,9 +195,9 @@ export function arcSegmentPoint(points: number[][], line: number[][]): number[] 
         let [x, y] = [(1 - t2) * xa + t2 * xb, (1 - t2) * ya + t2 * yb];
 
         let leftQ2 = isLeftTriple([
-            [points[0][0], points[0][1]],
+            [x1, y1],
             [x, y],
-            [points[2][0], points[2][1]]
+            [x3, y3]
         ]);
 
         if (leftQ1 === leftQ2)
