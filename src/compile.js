@@ -5,8 +5,8 @@ import { FRLayout } from "../lib/layout/fruchterman.js";
 import { drawArc, drawArrowHead } from "./graphics.js";
 
 export function compile(str) {
-    const traslator = new Translator(str);
-    traslator.translate();
+    const traslator = new Translator();
+    traslator.translate(str);
 
     const vertexPool = traslator.getVertexPool();
     const linkPool = traslator.getLinkPool();

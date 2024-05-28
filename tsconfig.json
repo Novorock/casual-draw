@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": true,
+        "outDir": "./lib",
+        "target": "ES2015"
+    },
+    "exclude": [
+        "lib/**/*"
+    ]
+}

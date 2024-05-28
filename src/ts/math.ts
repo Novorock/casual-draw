@@ -1,11 +1,14 @@
-export function distance(A) {
+export function distance(A: number[]) {
     if (A.length > 2)
         throw new Error("Unsupported operation exception.");
-    return Math.sqrt(Math.pow(A[0], 2)
-        + Math.pow(A[1], 2));
+
+    return Math.sqrt(
+        Math.pow(A[0], 2)
+        + Math.pow(A[1], 2)
+    )
 }
 
-export function arg(v) {
+export function arg(v: number[]): number {
     if (v.length > 2)
         throw new Error("Unsupported operation exception.");
 
@@ -27,47 +30,57 @@ export function arg(v) {
         return Math.asin(y);
 }
 
-export function normal(A, B) {
+export function normal(A: number[], B: number[]): number[] {
     if (A.length > 2 || B.length > 2)
         throw new Error("Unsupported operation exception.");
+
     const a1 = B[0] - A[0];
     const a2 = B[1] - A[1];
     const l = distance([a1, a2]);
+
     return [-a2 / l, a1 / l];
 }
 
-export function dot(v, u) {
+export function dot(v: number[], u: number[]) {
     return v.reduce((accumulator, _, i) => accumulator + v[i] * u[i], 0);
 }
 
-export function linearSolve(A, b) {
+export function linearSolve(A: number[][], b: number[]): number[] {
     if (A.length > 2 || A[0].length > 2)
         throw new Error("Unsupported operation exception.");
+
     if (b.length !== A.length)
         throw new Error(`Incompatible shapes. (${A.length}, ${A[0].length}) and (${b.length})`);
+
     return [
         -(A[1][1] * b[0] - A[0][1] * b[1])
         / (A[0][1] * A[1][0] - A[0][0] * A[1][1]),
         -(-A[1][0] * b[0] + A[0][0] * b[1])
         / (A[0][1] * A[1][0] - A[0][0] * A[1][1])
-    ];
+    ]
 }
 
-const INF = 1000;
+const INF: number = 1000;
 
-export function floyd(w) {
+export function floyd(w: number[][]): number[][] {
     const n = w.length;
+
     let d = [...Array(n)].map((_, row) => {
         return w[row].map((el, col) => col === row || el === 0 ? INF : el);
     });
+
     for (let k = 0; k < n; k++)
         for (let i = 0; i < n; i++)
             for (let j = 0; j < n; j++)
-                d[i][j] = Math.min(d[i][j], d[i][k] + d[k][j]);
+                d[i][j] = Math.min(
+                    d[i][j],
+                    d[i][k] + d[k][j]
+                );
+
     return d;
 }
 
-export function isLeftTriple(points) {
+export function isLeftTriple(points: number[][]): boolean {
     if (points.length > 3)
         throw new Error("Unsupported operation exception.");
 
@@ -78,7 +91,7 @@ export function isLeftTriple(points) {
     return dot([y[0] - x[0], y[1] - x[1]], [ay, -ax]) < 0;
 }
 
-export function circleCenter(points) {
+export function circleCenter(points: number[][]): number[] {
     if (points.length > 3)
         throw new Error("Unsupported operation exception.");
 
@@ -108,7 +121,7 @@ export function circleCenter(points) {
     ];
 }
 
-export function arcSegmentPoint(points, line) {
+export function arcSegmentPoint(points: number[][], line: number[][]): number[] {
     const [x0, y0] = circleCenter(points);
     const r = distance([x0 - points[2][0], y0 - points[2][1]]);
     const leftQ1 = isLeftTriple(points);
@@ -170,7 +183,7 @@ export function arcSegmentPoint(points, line) {
     return [];
 }
 
-export function arcRectPoint(arc, rect) {
+export function arcRectPoint(arc: number[][], rect: number[]): number[] {
     const [x0, y0, width, height] = rect;
     const lines = [
         [[x0, y0], [x0, y0 + height]],
@@ -189,7 +202,7 @@ export function arcRectPoint(arc, rect) {
     return [];
 }
 
-export function placeInCenterOfScreen(x, y, width, height) {
+export function placeInCenterOfScreen(x: number[], y: number[], width: number, height: number): number[][] {
     const x0 = width / 2;
     const minX = Math.min(...x);
     const originX = minX + (Math.max(...x) - minX) / 2;
@@ -206,7 +219,7 @@ export function placeInCenterOfScreen(x, y, width, height) {
     ]
 }
 
-export function getTextPositionAtPoint(ctx, text, x0, y0) {
+export function getTextPositionAtPoint(ctx: CanvasRenderingContext2D, text: string, x0: number, y0: number): number[] {
     const metrics = ctx.measureText(text);
     const width = metrics.width;
     const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
@@ -216,7 +229,7 @@ export function getTextPositionAtPoint(ctx, text, x0, y0) {
     return [tx, ty];
 }
 
-export function getTextBoundingRect(ctx, text, x0, y0) {
+export function getTextBoundingRect(ctx: CanvasRenderingContext2D, text: string, x0: number, y0: number) {
     const metrics = ctx.measureText(text);
     const width = metrics.width;
     const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;

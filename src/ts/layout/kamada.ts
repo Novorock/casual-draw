@@ -1,8 +1,13 @@
 import { floyd, linearSolve } from "../math.js";
 
 export class KKLayout {
-    constructor(adjacency, L0, K) {
-        this.epsilon = 0.1;
+    private l: number[][];
+    private k: number[][];
+    private x: number[];
+    private y: number[];
+    private epsilon: number = 0.1;
+
+    constructor(adjacency: number[][], L0: number, K: number) {
         const n = adjacency.length;
 
         for (let i = 0; i < n; i++)
@@ -36,7 +41,7 @@ export class KKLayout {
         }
     }
 
-    run() {
+    public run() {
         const n = this.x.length;
         let maxDelta = 0;
         let m = 0;
@@ -44,27 +49,32 @@ export class KKLayout {
         do {
             maxDelta = 0;
             m = 0;
+
             for (let i = 0; i < n; i++) {
-                let delta = Math.sqrt(Math.pow(this.partialX(i), 2)
-                    + Math.pow(this.partialY(i), 2));
+                let delta = Math.sqrt(
+                    Math.pow(this.partialX(i), 2)
+                    + Math.pow(this.partialY(i), 2)
+                );
+
                 if (delta > maxDelta) {
                     maxDelta = delta;
                     m = i;
                 }
             }
+
             this.optimize(m);
         } while (maxDelta > this.epsilon);
     }
 
-    getX() {
+    public getX() {
         return this.x;
     }
 
-    getY() {
+    public getY() {
         return this.y;
     }
 
-    optimize(m) {
+    private optimize(m: number) {
         let delta = 0;
 
         do {
@@ -75,14 +85,18 @@ export class KKLayout {
                 -this.partialX(m),
                 -this.partialY(m)
             ]);
+
             this.x[m] += dx;
             this.y[m] += dy;
-            delta = Math.sqrt(Math.pow(this.partialX(m), 2)
-                + Math.pow(this.partialY(m), 2));
+
+            delta = Math.sqrt(
+                Math.pow(this.partialX(m), 2)
+                + Math.pow(this.partialY(m), 2)
+            );
         } while (delta > this.epsilon);
     }
 
-    partialX(m) {
+    private partialX(m: number): number {
         let sum = 0;
         const x = this.x;
         const y = this.y;
@@ -92,16 +106,21 @@ export class KKLayout {
         for (let i = 0; i < this.k.length; i++) {
             if (i === m)
                 continue;
-            sum += k[m][i] * (x[m] - x[i]
+
+            sum += k[m][i] * (
+                x[m] - x[i]
                 - l[m][i] * (x[m] - x[i])
-                / Math.sqrt(Math.pow(x[m] - x[i], 2)
-                    + Math.pow(y[m] - y[i], 2)));
+                / Math.sqrt(
+                    Math.pow(x[m] - x[i], 2)
+                    + Math.pow(y[m] - y[i], 2)
+                )
+            );
         }
 
         return sum;
     }
 
-    partialY(m) {
+    private partialY(m: number): number {
         let sum = 0;
         const x = this.x;
         const y = this.y;
@@ -111,16 +130,21 @@ export class KKLayout {
         for (let i = 0; i < this.k.length; i++) {
             if (i === m)
                 continue;
-            sum += k[m][i] * (y[m] - y[i]
+
+            sum += k[m][i] * (
+                y[m] - y[i]
                 - l[m][i] * (y[m] - y[i])
-                / Math.sqrt(Math.pow(x[m] - x[i], 2)
-                    + Math.pow(y[m] - y[i], 2)));
+                / Math.sqrt(
+                    Math.pow(x[m] - x[i], 2)
+                    + Math.pow(y[m] - y[i], 2)
+                )
+            );
         }
 
         return sum;
     }
 
-    partialX_2(m) {
+    private partialX_2(m: number): number {
         let sum = 0;
         const x = this.x;
         const y = this.y;
@@ -130,16 +154,22 @@ export class KKLayout {
         for (let i = 0; i < this.k.length; i++) {
             if (i === m)
                 continue;
-            sum += k[m][i] * (1 - l[m][i]
+
+            sum += k[m][i] * (
+                1 - l[m][i]
                 * Math.pow(y[m] - y[i], 2)
-                / Math.pow(Math.pow(x[m] - x[i], 2)
-                    + Math.pow(y[m] - y[i], 2), 3 / 2));
+                / Math.pow(
+                    Math.pow(x[m] - x[i], 2)
+                    + Math.pow(y[m] - y[i], 2),
+                    3 / 2
+                )
+            );
         }
 
         return sum;
     }
 
-    partialY_2(m) {
+    private partialY_2(m: number): number {
         let sum = 0;
         const x = this.x;
         const y = this.y;
@@ -149,17 +179,22 @@ export class KKLayout {
         for (let i = 0; i < this.k.length; i++) {
             if (i === m)
                 continue;
-            sum += k[m][i] * (1 - l[m][i]
+
+            sum += k[m][i] * (
+                1 - l[m][i]
                 * Math.pow(x[m] - x[i], 2)
-                / Math.pow(Math.pow(x[m] - x[i], 2)
-                    + Math.pow(y[m] - y[i], 2), 3 / 2));
-
+                / Math.pow(
+                    Math.pow(x[m] - x[i], 2)
+                    + Math.pow(y[m] - y[i], 2),
+                    3 / 2
+                )
+            );
         }
 
         return sum;
     }
 
-    partialXY(m) {
+    private partialXY(m: number): number {
         let sum = 0;
         const x = this.x;
         const y = this.y;
@@ -169,11 +204,17 @@ export class KKLayout {
         for (let i = 0; i < this.k.length; i++) {
             if (i === m)
                 continue;
-            sum += k[m][i] * (l[m][i]
+
+            sum += k[m][i] * (
+                l[m][i]
                 * (x[m] - x[i])
                 * (y[m] - y[i])
-                / Math.pow(Math.pow(x[m] - x[i], 2)
-                    + Math.pow(y[m] - y[i], 2), 3 / 2));
+                / Math.pow(
+                    Math.pow(x[m] - x[i], 2)
+                    + Math.pow(y[m] - y[i], 2),
+                    3 / 2
+                )
+            );
         }
 
         return sum;

@@ -1,17 +1,24 @@
-const UNEXPECTED_TOKEN = (str, pos) => new Error(`Unexpected token '${str[pos]}' at position: ${pos}.`);
-const ALIAS_DEF_EXPECTED = (str, pos) => new Error(`Expected '@' at position: ${pos}, but '${str[pos]}' 'was met.`);
-const CLOSE_PARANTH_EXPECTED = (str, pos) => new Error(`Expected ')' at position: ${pos}, but '${str[pos]}' was met.`);
-const CLOSE_BRACK_EXPECTED = (str, pos) => new Error(`Expected ']' at position: ${pos}, but '${str[pos]}' was met.`);
-const ARROW_DEF_EXPECTED = (str, pos) => new Error(`Expected arrow definition at position: ${pos}, but '${str[pos]}' was met.`);
+const UNEXPECTED_TOKEN = (str: string, pos: number) => new Error(`Unexpected token '${str[pos]}' at position: ${pos}.`);
+const ALIAS_DEF_EXPECTED = (str: string, pos: number) => new Error(`Expected '@' at position: ${pos}, but '${str[pos]}' 'was met.`);
+const CLOSE_PARANTH_EXPECTED = (str: string, pos: number) => new Error(`Expected ')' at position: ${pos}, but '${str[pos]}' was met.`);
+const CLOSE_BRACK_EXPECTED = (str: string, pos: number) => new Error(`Expected ']' at position: ${pos}, but '${str[pos]}' was met.`);
+const ARROW_DEF_EXPECTED = (str: string, pos: number) => new Error(`Expected arrow definition at position: ${pos}, but '${str[pos]}' was met.`);
 
-export class LxVertex {
-    constructor(text) {
+class LxVertex {
+    public text: string;
+    public bounded: boolean;
+
+    constructor(text: string) {
         this.text = text;
-        this.bounded = false;
     }
 }
 
 export class LxVertexPool {
+    private next: number;
+    private name2Vertex: Map<String, LxVertex>;
+    private name2Index: Map<String, number>;
+    private index2Vertex: Map<number, LxVertex>;
+
     constructor() {
         this.next = 0;
         this.name2Vertex = new Map();
@@ -19,7 +26,7 @@ export class LxVertexPool {
         this.index2Vertex = new Map();
     }
 
-    put(name, v) {
+    public put(name: string, v: LxVertex) {
         if (this.name2Vertex.has(name))
             throw new Error(`Variable with name '${name}' is already defined.`);
 
@@ -28,84 +35,107 @@ export class LxVertexPool {
         this.index2Vertex.set(this.next++, v);
     }
 
-    getVertexByName(name) {
+    getVertexByName(name: string) {
         if (!this.name2Vertex.has(name))
             throw new Error(`Variable with name ${name} is not defined.`);
 
         return this.name2Vertex.get(name);
     }
 
-    getVertexByIndex(index) {
+    getVertexByIndex(index: number) {
         if (!this.index2Vertex.has(index))
             throw new Error(`Variable with index ${index} is not defined.`);
 
         return this.index2Vertex.get(index);
     }
 
-    getIndex(name) {
+    public getIndex(name: string): number {
         if (!this.name2Vertex.has(name))
             throw new Error(`Variable with name ${name} is not defined.`);
 
         return this.name2Index.get(name);
     }
 
-    getCount() {
+    public getCount(): number {
         return this.name2Vertex.size;
     }
 }
 
-export var LxLinkHead;
-(function (LxLinkHead) {
-    LxLinkHead[LxLinkHead["DEFAULT"] = 0] = "DEFAULT";
-    LxLinkHead[LxLinkHead["POSITIVE"] = 1] = "POSITIVE";
-    LxLinkHead[LxLinkHead["NEGATIVE"] = 2] = "NEGATIVE";
-})(LxLinkHead || (LxLinkHead = {}));
-;
+export enum LxLinkHead {
+    DEFAULT,
+    POSITIVE,
+    NEGATIVE
+};
 
-export class LxLink {
-    constructor(left, right, head) {
+class LxLink {
+    private left: string;
+    private right: string;
+    private head: LxLinkHead;
+    private delayed: boolean;
+
+    constructor(left: string, right: string, head: LxLinkHead) {
         this.left = left;
         this.right = right;
         this.head = head;
     }
 
-    setDelayed() {
+    public setDelayed() {
         this.delayed = true;
     }
 }
 
 export class LxLinkPool {
+    private pool: Array<LxLink>;
+
     constructor() {
         this.pool = [];
     }
 
-    push(link) {
+    public push(link: LxLink) {
         this.pool.push(link);
     }
 
-    asArray() {
+    public asArray() {
         return this.pool;
     }
 }
 
-class LxName {
-    constructor(name) {
+interface LxToken {
+}
+
+interface LxOperand {
+}
+
+interface LxOperation {
+    handle(left: LxOperand, right: LxOperand): LxOperand;
+    getPriorityValue(): number;
+}
+
+class LxName implements LxToken, LxOperand {
+    public name: string;
+
+    constructor(name: string) {
         this.name = name;
     }
 }
 
-class LxText {
-    constructor(text) {
+class LxText implements LxToken, LxOperand {
+    public text: string;
+
+    constructor(text: string) {
         this.text = text;
     }
 }
 
-class LxAlias {
-    constructor(pool) {
+class LxAlias implements LxToken, LxOperation {
+    private pool: LxVertexPool;
+    private bounded: boolean;
+
+    constructor(pool: LxVertexPool) {
         this.pool = pool;
     }
 
-    handle(left, right) {
+    public handle(left: LxOperand, right: LxOperand): LxOperand {
         if (!(left instanceof LxName) || !(right instanceof LxText))
             throw new Error(`Unsupported operand types for alias operation.`);
 
@@ -119,28 +149,32 @@ class LxAlias {
         return left;
     }
 
-    getPriorityValue() {
+    public getPriorityValue(): number {
         return 2;
     }
 
-    setBounded() {
+    public setBounded() {
         this.bounded = true;
     }
 }
 
-class LxArrow {
-    constructor(head, vertexPool, linkPool) {
+class LxArrow implements LxToken, LxOperation {
+    private head: LxLinkHead;
+    private delayed: boolean;
+    private vertexPool: LxVertexPool;
+    private linkPool: LxLinkPool;
+
+    constructor(head: LxLinkHead, vertexPool: LxVertexPool, linkPool: LxLinkPool) {
         this.head = head;
         this.vertexPool = vertexPool;
         this.linkPool = linkPool;
     }
 
-    handle(left, right) {
+    public handle(left: LxOperand, right: LxOperand): LxName {
         if (!(left instanceof LxName) || !(right instanceof LxName))
             throw new Error(`Unsupported operand types for arrow operation.`);
 
         const link = new LxLink(left.name, right.name, this.head);
-
         this.linkPool.push(link);
 
         if (this.delayed)
@@ -149,43 +183,47 @@ class LxArrow {
         return left;
     }
 
-    getPriorityValue() {
+    public getPriorityValue(): number {
         return 1;
     }
 
-    setDelayed() {
+    public setDelayed() {
         this.delayed = true;
     }
 }
 
 class SolvingStackMachine {
+    private holdingStack: Array<LxOperation>;
+    private output: Array<LxToken>;
+    private solvingStack: Array<LxOperand>;
+
     constructor() {
         this.holdingStack = [];
         this.output = [];
         this.solvingStack = [];
     }
 
-    solve() {
+    public solve() {
         while (this.holdingStack.length > 0)
             this.output.push(this.holdingStack.pop());
+
         for (let token of this.output) {
             if (token instanceof LxAlias || token instanceof LxArrow) {
                 const right = this.solvingStack.pop();
                 const left = this.solvingStack.pop();
                 this.solvingStack.push(token.handle(left, right));
-            }
-            else
+            } else
                 this.solvingStack.push(token);
         }
     }
 
-    clear() {
+    public clear() {
         this.holdingStack = [];
         this.output = [];
         this.solvingStack = [];
     }
 
-    push(lex) {
+    public push(lex: LxToken) {
         if (lex instanceof LxName || lex instanceof LxText)
             this.output.push(lex);
 
@@ -206,14 +244,12 @@ class SolvingStackMachine {
 }
 
 export class Translator {
-    constructor(str) {
-        this.src = str;
-        this.ssm = new SolvingStackMachine();
-        this.vertexPool = new LxVertexPool();
-        this.linkPool = new LxLinkPool();
-    }
+    private src: string;
+    private ssm: SolvingStackMachine;
+    private vertexPool: LxVertexPool;
+    private linkPool: LxLinkPool;
 
-    isWord(ch) {
+    private isWord(ch: string): boolean {
         if (ch.length > 1)
             throw new Error(`Character expected instead of ${ch}`);
 
@@ -222,28 +258,28 @@ export class Translator {
         return 'a' <= t && t <= 'z';
     }
 
-    isDigit(ch) {
+    private isDigit(ch: string): boolean {
         if (ch.length > 1)
             throw new Error(`Character expected instead of ${ch}`);
 
         return '0' <= ch && ch <= '9';
     }
 
-    isSeparator(ch) {
+    private isSeparator(ch: string): boolean {
         if (ch.length > 1)
             throw new Error(`Character expected instead of ${ch}`);
 
         return ' ' === ch || '\n' === ch || '\t' === ch;
     }
 
-    isPunctuation(ch) {
+    private isPunctuation(ch: string): boolean {
         if (ch.length > 1)
             throw new Error(`Character expected instead of ${ch}`);
 
         return ',' === ch || '.' === ch || '!' === ch || '?' === ch || ch === '-' || ';' === ch || ':' === ch;
     }
 
-    skipSeparator(str, pos) {
+    private skipSeparator(str: string, pos: number): number {
         let next = pos;
 
         while (next < str.length && this.isSeparator(str[next])) {
@@ -253,12 +289,12 @@ export class Translator {
         return next;
     }
 
-    lexName(str, pos) {
+    private lexName(str: string, pos: number): number {
         if (!this.isWord(str[pos]))
             throw UNEXPECTED_TOKEN(str, pos);
 
         let next = pos;
-        let name = "";
+        let name: string = "";
 
         do {
             name += str[next];
@@ -266,30 +302,35 @@ export class Translator {
         } while (this.isWord(str[next]) || this.isDigit(str[next]) || str[next] === '_');
 
         this.ssm.push(new LxName(name));
+
         return next;
     }
 
-    lexText(str, pos) {
+    private lexText(str: string, pos: number): number {
         let next = pos;
-        let text = "";
+        let text: string = "";
 
-        while (this.isWord(str[next])
+        while (
+            this.isWord(str[next])
             || this.isDigit(str[next])
             || this.isSeparator(str[next])
-            || this.isPunctuation(str[next])) {
+            || this.isPunctuation(str[next])
+        ) {
             text += str[next];
             next = next + 1;
         }
 
         this.ssm.push(new LxText(text));
+
         return next;
     }
 
-    lexAlias(str, pos) {
+    private lexAlias(str: string, pos: number): number {
         if (str[pos] !== '@')
             throw ALIAS_DEF_EXPECTED(str, pos);
 
         let next = this.lexName(str, pos + 1);
+
         next = this.skipSeparator(str, next);
 
         if (str[next] === '(') {
@@ -297,13 +338,11 @@ export class Translator {
 
             if (str[next] === ')') {
                 this.ssm.push(new LxAlias(this.vertexPool));
-
                 return next + 1;
             }
 
             throw CLOSE_PARANTH_EXPECTED(str, next);
-        }
-        else if (str[next] === '[') {
+        } else if (str[next] === '[') {
             next = this.lexText(str, next + 1);
 
             if (str[next] === ']') {
@@ -315,85 +354,99 @@ export class Translator {
 
             throw CLOSE_BRACK_EXPECTED(str, next);
         }
+
         // Text description expected
         throw UNEXPECTED_TOKEN(str, next);
+
         // Take alias name as text description
     }
 
-    lexArrow(str, pos) {
+    private lexArrow(str: string, pos: number): number {
         let next = pos;
         let head = LxLinkHead.DEFAULT;
         let delayed = false;
 
         if (str[next] === '|') {
-            next = next + 1;
+            next = next + 1
+
             if (str[next] === '|') {
                 delayed = true;
                 next = next + 1;
-            }
-            else
+            } else
                 throw UNEXPECTED_TOKEN(str, next);
         }
 
         if (str[next] === '+') {
             next = next + 1;
             head = LxLinkHead.POSITIVE;
-        }
-
-        else if (str[next] === '-') {
+        } else if (str[next] === '-') {
             next = next + 1;
             head = LxLinkHead.NEGATIVE;
         }
 
         if (str[next] === '>') {
             const operation = new LxArrow(head, this.vertexPool, this.linkPool);
+
             if (delayed)
                 operation.setDelayed();
+
             this.ssm.push(operation);
+
             return next + 1;
         }
 
         throw ARROW_DEF_EXPECTED(str, next);
     }
 
-    lexVert(str, pos) {
+    private lexVert(str: string, pos: number): number {
         let next = pos;
+
         try {
             next = this.lexAlias(str, pos);
-        }
-        catch (e) {
+        } catch (e) {
             next = this.lexName(str, pos);
         }
+
         return next;
     }
 
-    lexExpression(str, pos) {
+    private lexExpression(str: string, pos: number): number {
         let next = this.lexVert(str, pos);
         next = this.skipSeparator(str, next);
+
         do {
             next = this.lexArrow(str, next);
             next = this.skipSeparator(str, next);
             next = this.lexVert(str, next);
             next = this.skipSeparator(str, next);
         } while (next < str.length && str[next] !== ';');
+
         return next + 1;
     }
 
-    translate() {
-        let next = this.skipSeparator(this.src, 0);
-        while (next < this.src.length) {
-            next = this.lexExpression(this.src, next);
+    public translate(str: string) {
+        this.src = str;
+        this.ssm = new SolvingStackMachine();
+        this.vertexPool = new LxVertexPool();
+        this.linkPool = new LxLinkPool();
+
+        let next = this.skipSeparator(str, 0);
+
+        while (next < str.length) {
+            next = this.lexExpression(str, next);
+
             this.ssm.solve();
             this.ssm.clear();
-            next = this.skipSeparator(this.src, next);
+
+            next = this.skipSeparator(str, next);
         }
     }
 
-    getVertexPool() {
+    public getVertexPool(): LxVertexPool {
         return this.vertexPool;
     }
 
-    getLinkPool() {
+    public getLinkPool(): LxLinkPool {
         return this.linkPool;
     }
 }
