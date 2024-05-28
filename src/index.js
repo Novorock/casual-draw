@@ -1,130 +1,69 @@
-import { Graph } from "./graph.js";
-import { ForceDirectedLayout, LombardiLayout } from "./layout.js";
+import { compile } from "./compile.js";
 
-var canvas = $("#canvas");
-var ctx = canvas.get(0).getContext("2d");
-var oldTime = 0;
-var elapsedTime = 0;
+const editor = document.getElementById("editor");
+const flask = new CodeFlask(editor, {
+    language: "js",
+    lineNumbers: true
+});
 
-// const source = [
-//     { from: 1, to: 2 },
-//     { from: 1, to: 3 },
-//     { from: 1, to: 4 },
-//     { from: 2, to: 4 },
-//     { from: 7, to: 4 },
-//     { from: 4, to: 3 },
-//     { from: 6, to: 4 },
-//     { from: 5, to: 6 },
-//     { from: 5, to: 2 },
-//     { from: 3, to: 5 },
-//     { from: 3, to: 2 }
-// ];
+flask.updateCode("@A1(1) > @A5(5) > @A2(2) +> A1;\n@A3(3) > @A4(4) > @A6(6) +> A3;\nA4 -> A2;");
 
-const source = [
-    { from: 1, to: 2 },
-    { from: 2, to: 3 },
-    { from: 3, to: 4 },
-    { from: 3, to: 10 },
-    { from: 4, to: 5 },
-    { from: 5, to: 6 },
-    { from: 6, to: 7 },
-    { from: 7, to: 1 },
-    { from: 10, to: 8 },
-    { from: 10, to: 9 },
-    { from: 9, to: 6 },
-    { from: 6, to: 11 },
-    { from: 11, to: 5 },
-    { from: 6, to: 12 },
-    { from: 12, to: 5 },
-    { from: 6, to: 13 },
-    { from: 13, to: 14 },
-    { from: 14, to: 6 },
-    { from: 12, to: 14 },
-    { from: 11, to: 14 },
-    { from: 13, to: 12 }
-];
+const canvas = document.getElementById("canvas");
 
-const count = 14;
+window.onresize = () => {
+    setCanvasDimension();
+    setCodeFlaskDimension();
+    callToCompile();
+}
 
-// const source = [
-//     { from: 1, to: 2 },
-//     { from: 2, to: 3 },
-//     { from: 3, to: 1 }
-// ];
+window.addEventListener("load", eventWindowLoaded);
 
-const adjacency = [];
+function setCodeFlaskDimension() {
+    const container = document.getElementById("editor-container");
+    const header = document.getElementById("editor-header");
 
-for (let i = 0; i < count; i++) {
-    const row = [];
+    if (container != null) {
+        const width = container.getBoundingClientRect().width;
+        const height = container.getBoundingClientRect().height - (
+            header ? header.getBoundingClientRect().height : 0
+        );
 
-    for (let j = 0; j < count; j++) {
-        row.push(false);
+        const flask = document.querySelector(".codeflask");
+        flask.style.width = `${width}px`;
+        flask.style.height = `${height}px`;
     }
-
-    adjacency.push(row);
 }
 
-for (let s of source) {
-    adjacency[s.from - 1][s.to - 1] = true;
+function setCanvasDimension() {
+    const canvasContainer = document.getElementById("canvas-container");
+    const header = document.getElementById("canvas-header");
+
+    if (canvasContainer != null) {
+        const width = canvasContainer.getBoundingClientRect().width - 8;
+        const height = canvasContainer.getBoundingClientRect().height - (
+            header ? header.getBoundingClientRect().height : 0
+        ) - 5;
+
+        canvas.width = width;
+        canvas.style.width = `${width}px`;
+
+        canvas.height = height;
+        canvas.style.height = `${height}px`;
+    }
 }
 
-var G = new Graph(adjacency);
-
-var k = new CustomSlider("k", 50, 500, 5, 130);
-var delta = new CustomSlider("delta", 0.02, 0.98, 0.02, 0.94);
-
-// var layout = new ForceDirectedLayout(G, k.getValue(), delta.getValue());
-var layout = new ForceDirectedLayout(G, 130, 0.82);
-// var lombardi = new LombardiLayout(G, 130, 0.82);
-
-subscribe("button/reset", (_) => {
-    // layout.reset(k.getValue(), delta.getValue());
-    layout = new LombardiLayout(G, 130 / 2.3, 0.94);
-});
-
-subscribe("button/play", (_) => {
-    layout.play();
-});
-
-subscribe("button/pause", (_) => {
-    layout.pause();
-});
-
-subscribe("button/forward", (_) => {
-    layout.playOnce();
-});
-
-function fit() {
-    canvas.get(0).width = $(window).width() - $("#sidebar").width();
-    canvas.get(0).height = $(window).height();
+function eventWindowLoaded() {
+    setCodeFlaskDimension();
+    setCanvasDimension();
 }
 
-window.onresize = function () {
-    fit();
-    publish("canvas/resize", [canvas.get(0).width, canvas.get(0).height]);
+function callToCompile() {
+    let code = flask.getCode();
+    code += '\n';
+    compile(code);
 }
 
-function init() {
-    fit();
-}
-
-function loop(currentTime) {
-    elapsedTime = currentTime - oldTime;
-    oldTime = currentTime;
-    layout.update(elapsedTime);
-    draw(ctx);
-    window.requestAnimationFrame(loop);
-}
-
-function draw(ctx) {
-    ctx.clearRect(0, 0, canvas.width(), canvas.height());
-    layout.draw(ctx);
-
-    ctx.save();
-    ctx.restore();
-}
-
-window.onload = function () {
-    init();
-    window.requestAnimationFrame(loop);
-}
+const compileButton = document.getElementById("compile-button");
+compileButton.onclick = (e) => {
+    callToCompile();
+};

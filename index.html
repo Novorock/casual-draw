@@ -2,91 +2,45 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    </meta>
+    <meta charset="UTF-8" />
     <link href="./index.css" rel="stylesheet" />
 </head>
 
 <body>
-    <div id="root">
-        <div id="main">
-            <canvas id="canvas"></canvas>
-        </div>
+    <div id="content">
+        <div class="section" id="editor-container">
+            <div class="section-header" id="editor-header">
+                <div class="section-header-title">
+                    <span>Code Editor</span>
+                </div>
 
-        <div id="sidebar">
-            <div id="playbar-container">
-                <div id="playbar">
-                    <div id="btn-bar">
-                        <div>
-                            <button id="play-btn" class="btn">
-                                <div></div>
-                            </button>
-                        </div>
 
-                        <div>
-                            <button id="pause-btn" class="btn">
-                                <div></div>
-                            </button>
-                        </div>
-
-                        <div>
-                            <button id="forward-btn" class="btn">
-                                <div></div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="slider-container">
-                        <div>
-                            <span>Iteration: </span><span id="iteration-count">2</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div>
-                            <button id="reset-btn">Reset</button>
-                        </div>
-                    </div>
+                <div class="section-header-button-bar">
+                    <button id="compile-button">
+                        <span>Compile</span>
+                    </button>
                 </div>
             </div>
 
-            <div id="parameter-container">
-                <div class="row">
-                    <div class="label-col">
-                        <span>k:</span>
-                    </div>
+            <div>
+                <div id="editor"></div>
+            </div>
+        </div>
 
-                    <div class="input-col">
-                        <input id="k" type="range" class="slider">
-                    </div>
-
-                    <div class="value-col">
-                        <span id="k_"></span>
-                    </div>
+        <div class="section" id="canvas-container">
+            <div class="section-header" id="canvas-header">
+                <div class="section-header-title">
+                    <span>Diagram</span>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="label-col">
-                        <span>Δ:</span>
-                    </div>
-
-                    <div class="input-col">
-                        <input id="delta" type="range" class="slider">
-                    </div>
-
-                    <div class="value-col">
-                        <span id="delta_"></span>
-                    </div>
-                </div>
+            <div>
+                <canvas id="canvas" width="200" height="200"></canvas>
             </div>
         </div>
     </div>
 
-    <script src="./lib/jquery-3.7.1.min.js"></script>
-    <script src="./lib/minpubsub.js"></script>
-    <script src="./src/util.js"></script>
-    <script src="./src/component/button.js"></script>
-    <script src="./src/component/slider.js"></script>
+    <script src="./lib/codeflask.min.js"></script>
     <script type="module" src="./src/index.js"></script>
 </body>
 
