@@ -119,5 +119,6 @@ Thumbs.db
 !.phpcs.xml.dist
 
 # resources
-lib/
-!codeflask.min.js
+!/lib/
+/lib/**
+!/lib/codeflask.min.js
