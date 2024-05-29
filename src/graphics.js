@@ -15,6 +15,13 @@ export function drawArc(ctx, points) {
     }
 
     const [x, y] = circleCenter([[x1, y1], [x2, y2], [x3, y3]]);
+
+    if (Math.abs(x) > 1000000 && Math.abs(y) > 1000000) {
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x3, y3);
+        return;
+    }
+
     const r = distance([x - x1, y - y1]);
     const counterclockwise = !isLeftTriple([[x1, y1], [x2, y2], [x3, y3]]);
 
