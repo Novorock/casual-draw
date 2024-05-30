@@ -242,23 +242,3 @@ export function placeInCenterOfScreen(x: number[], y: number[], width: number, h
         y.map(el => el + offsetY)
     ]
 }
-
-export function getTextPositionAtPoint(ctx: CanvasRenderingContext2D, text: string, x0: number, y0: number): number[] {
-    const metrics = ctx.measureText(text);
-    const width = metrics.width;
-    const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-    const tx = x0 - width / 2;
-    const ty = y0 + height / 2;
-
-    return [tx, ty];
-}
-
-export function getTextBoundingRect(ctx: CanvasRenderingContext2D, text: string, x0: number, y0: number) {
-    const metrics = ctx.measureText(text);
-    const width = metrics.width;
-    const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-    const tx = x0 - width / 2;
-    const ty = y0 + height / 2;
-
-    return [tx - 10, ty - 22.5, width + 20, height + 10];
-}

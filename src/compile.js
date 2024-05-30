@@ -2,7 +2,7 @@ import { Translator, LxLinkHead } from "../lib/lexer.js";
 import { KKLayout } from "../lib/layout/kamada.js";
 import { arcRectPoint, getTextBoundingRect, getTextPositionAtPoint, placeInCenterOfScreen } from "../lib/math.js";
 import { FRLayout } from "../lib/layout/fruchterman.js";
-import { drawArc, drawArrowHead } from "./graphics.js";
+import { Text, drawArc, drawArrowHead } from "./graphics.js";
 
 export function compile(str) {
     const traslator = new Translator();
@@ -17,7 +17,7 @@ export function compile(str) {
     kklayout.run();
 
     const adj = getAdjacencyMatrix(vertexPool, linkPool);
-    const frlayout = new FRLayout(adj, kklayout.getX(), kklayout.getY(), l / 7.1);
+    const frlayout = new FRLayout(adj, kklayout.getX(), kklayout.getY(), l / 7.9);
     frlayout.run();
 
     const canvas = document.getElementById("canvas");
@@ -29,7 +29,7 @@ export function compile(str) {
 
     const colorMap = getColorMap(vertexPool, linkPool);
     const colored = new Set();
-    const stack = [];
+    const vertices = [];
 
     frlayout.getDummiesIndices().forEach(v => colored.add(v));
 
@@ -46,20 +46,15 @@ export function compile(str) {
         for (let index of edge) {
             if (!colored.has(index)) {
                 colored.add(index);
-                stack.push(index);
+                vertices.push(index);
             }
         }
     }
 
-    while (stack.length > 0) {
-        const index = stack.pop();
+    const vertToText = new Map();
 
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = ctx.fillStyle = "blue";
-        ctx.beginPath();
-        ctx.arc(x[index], y[index], 3, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.fill();
+    while (vertices.length > 0) {
+        const index = vertices.pop();
 
         ctx.font = "20px Sans-Serif";
         const text = vertexPool.getVertexByIndex(index).text;
@@ -71,19 +66,33 @@ export function compile(str) {
             ctx.strokeStyle = "#ffffff";
         }
 
+        const textElement = new Text(ctx, text, x[index], y[index], 150);
+        vertToText.set(index, textElement);
+
         ctx.fillStyle = "#ffffff";
-        ctx.rect(...getTextBoundingRect(ctx, text, x[index], y[index]));
+        ctx.beginPath();
+        ctx.rect(...textElement.getBoundingRect());
         ctx.stroke();
         ctx.fill();
 
         ctx.fillStyle = "#000000";
-        ctx.fillText(text, ...getTextPositionAtPoint(ctx, text, x[index], y[index]));
+        textElement.draw();
+
+        // ctx.fillStyle = "#ffffff";
+        // ctx.beginPath();
+        // ctx.rect(...getTextBoundingRect(ctx, text, x[index], y[index]));
+        // ctx.stroke();
+        // ctx.fill();
+
+        // ctx.fillStyle = "#000000";
+        // ctx.fillText(text, ...getTextPositionAtPoint(ctx, text, x[index], y[index]));
     }
 
     for (let edge of layout) {
         let [i1, i2, i3] = edge;
         const [p1, p2, p3] = [[x[i1], y[i1]], [x[i2], y[i2]], [x[i3], y[i3]]];
-        const rect = getTextBoundingRect(ctx, vertexPool.getVertexByIndex(i3).text, ...p3);
+        // const rect = getTextBoundingRect(ctx, vertexPool.getVertexByIndex(i3).text, ...p3);
+        const rect = vertToText.get(i3).getBoundingRect();
         const result = arcRectPoint([p1, p2, p3], rect);
 
         ctx.fillStyle = ctx.strokeStyle = colorMap.get(`${i1}&${i3}`);

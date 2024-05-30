@@ -58,3 +58,56 @@ export function drawArrowHead(ctx, points, l) {
     ctx.lineTo(x + l * nx / 2, y + l * ny / 2);
     ctx.lineTo(points[2][0], points[2][1]);
 }
+
+export class Text {
+    constructor(ctx, text, x, y, expectedWidth) {
+        const words = text.trim().split(" ").map(w => w.trim());
+        const lines = [];
+
+        if (words.length < 1)
+            lines.push("");
+        else
+            lines.push(words[0]);
+
+        for (let i = 1; i < words.length; i++) {
+            const line = lines.pop();
+            const newLine = line + " " + words[i];
+            let width = ctx.measureText(newLine).width;
+
+            if (width <= expectedWidth) {
+                lines.push(newLine);
+            } else {
+                lines.push(line, words[i]);
+            }
+        }
+
+        this.widths = lines.map(line => ctx.measureText(line).width);
+        const metrics = ctx.measureText(lines[0]);
+        this.lineHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+        this.height = lines.length * this.lineHeight + 5 * (lines.length - 2);
+
+        const maxWidth = Math.max(...this.widths);
+
+        this.rect = [x - maxWidth / 2 - 10, y - this.height / 2 - 10, maxWidth + 20, this.height + 20];
+
+        this.ctx = ctx;
+        this.lines = lines;
+        this.x = x;
+        this.y = y;
+    }
+
+    getBoundingRect() {
+        return this.rect;
+    }
+
+    draw() {
+        const maxWidth = Math.max(...this.widths);
+
+        for (let i = 0; i < this.lines.length; i++) {
+            const width = this.widths[i];
+            const x = this.x - maxWidth / 2 + (maxWidth - width) / 2;
+            const y = this.y - this.height / 2 + i * this.lineHeight + i * 5 + 15;
+            this.ctx.fillText(this.lines[i], x, y);
+        }
+    }
+}
