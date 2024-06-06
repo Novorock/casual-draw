@@ -226,6 +226,17 @@ export function arcRectPoint(arc: number[][], rect: number[]): number[] {
     return [];
 }
 
+export function hasIntersection(rect1: number[], rect2: number[]) {
+    let [x1, y1, w1, h1] = rect1;
+    let [x2, y2, w2, h2] = rect2;
+
+    if ((x2 < x1 && x1 < x2 + w2) || (x2 < x1 + w1 && x1 + w1 < x2 + w2)) {
+        return (y2 < y1 && y1 < y2 + h2) || (y2 < y1 + h1 && y1 + h1 < y2 + h2);
+    }
+
+    return false;
+}
+
 export function placeInCenterOfScreen(x: number[], y: number[], width: number, height: number): number[][] {
     const x0 = width / 2;
     const minX = Math.min(...x);

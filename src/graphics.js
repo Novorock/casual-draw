@@ -1,62 +1,103 @@
-import { circleCenter, distance, det, arg, isLeftTriple } from "../lib/math.js";
+import { circleCenter, distance, det, arg, isLeftTriple, arcRectPoint } from "../lib/math.js";
 
-export function drawArc(ctx, points) {
-    let [[x1, y1], [x2, y2], [x3, y3]] = points;
+export class Arc {
+    constructor(ctx, cascade) {
+        this.ctx = ctx;
 
-    if (y1 === y2 && y2 === y3)
-        y2 += 0.5;
+        let [[x1, y1], [x2, y2], [x3, y3]] = cascade;
+        const [ax, ay] = [x2 - x1, y2 - y1];
 
-    const [ax, ay] = [x2 - x1, y2 - y1];
+        if (Math.abs(det([[ax, ay], [x3 - x2, y3 - y2]])) < 0.08) {
+            const l = distance([ax, ay]);
 
-    if (Math.abs(det([[ax, ay], [x3 - x2, y3 - y2]])) < 0.001) {
-        const l = distance([ax, ay]);
+            [x2, y2] = [x2 + 8 * ay / l, y2 - 8 * ax / l];
+        }
 
-        [x2, y2] = [x2 - 5 * ay / l, y2 + 5 * ax / l];
+        [this.x, this.y] = circleCenter([[x1, y1], [x2, y2], [x3, y3]]);
+        this.isNearStraightLine = Math.abs(this.x) > 1000000 && Math.abs(this.y) > 1000000;
+
+        if (!this.isNearStraightLine) {
+            this.r = distance([this.x - x1, this.y - y1]);
+            this.counterclockwise = !isLeftTriple([[x1, y1], [x2, y2], [x3, y3]]);
+
+            this.theta1 = arg([x3 - this.x, y3 - this.y]);
+            this.theta2 = arg([x1 - this.x, y1 - this.y]);
+
+            if (this.counterclockwise) {
+                let t = this.theta1;
+                this.theta1 = this.theta2;
+                this.theta2 = t;
+            }
+
+            if (this.theta2 < this.theta1) {
+                this.theta2 += 2 * Math.PI;
+            }
+        }
+
+        this.cascade = [[x1, y1], [x2, y2], [x3, y3]];
     }
 
-    const [x, y] = circleCenter([[x1, y1], [x2, y2], [x3, y3]]);
-
-    if (Math.abs(x) > 1000000 && Math.abs(y) > 1000000) {
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x3, y3);
-        return;
+    draw() {
+        if (this.isNearStraightLine) {
+            this.ctx.moveTo(this.cascade[0][0], this.cascade[0][1]);
+            this.ctx.lineTo(this.cascade[1][0], this.cascade[1][1]);
+        } else {
+            this.ctx.arc(this.x, this.y, this.r, this.theta1, this.theta2);
+        }
     }
-
-    const r = distance([x - x1, y - y1]);
-    const counterclockwise = !isLeftTriple([[x1, y1], [x2, y2], [x3, y3]]);
-
-    let theta1 = arg([x3 - x, y3 - y]);
-    let theta2 = arg([x1 - x, y1 - y]);
-
-    if (counterclockwise) {
-        let t = theta1;
-        theta1 = theta2;
-        theta2 = t;
-    }
-
-    if (theta2 < theta1) {
-        theta2 += 2 * Math.PI;
-    }
-
-    ctx.arc(x, y, r, theta1, theta2);
 }
 
-export function drawArrowHead(ctx, points, l) {
-    const [x0, y0] = circleCenter(points);
-    const r = distance([x0 - points[0][0], y0 - points[0][1]]);
+export class ArrowHead {
+    constructor(ctx, arc, text, l) {
+        this.ctx = ctx;
+        this.arc = arc;
+        this.l = l;
 
-    const deltaPhi = l / r;
-    const sign = isLeftTriple(points) ? 1 : -1;
+        const [x0, y0] = [arc.x, arc.y];
+        const r = arc.r;
 
-    const t = arg([points[2][0] - x0, points[2][1] - y0]) + sign * deltaPhi;
-    const cost = Math.cos(t);
-    const sint = Math.sin(t);
-    const [x, y] = [x0 + r * cost, y0 + r * sint];
-    const [nx, ny] = [-cost, -sint];
+        const deltaPhi = l / r;
+        const sign = arc.counterclockwise ? -1 : 1;
 
-    ctx.lineTo(x - l * nx / 2, y - l * ny / 2);
-    ctx.lineTo(x + l * nx / 2, y + l * ny / 2);
-    ctx.lineTo(points[2][0], points[2][1]);
+        const [jx, jy] = this.joint(text);
+
+        const t = arg([jx - x0, jy - y0]) + sign * deltaPhi;
+        const cost = Math.cos(t);
+        const sint = Math.sin(t);
+        const [x, y] = [x0 + r * cost, y0 + r * sint];
+        const [nx, ny] = [-cost, -sint];
+
+        [this.A, this.B, this.C] = [
+            [x - l * nx / 2, y - l * ny / 2],
+            [x + l * nx / 2, y + l * ny / 2],
+            [jx, jy]
+        ];
+
+        this.arcX = x;
+        this.arcY = y;
+    }
+
+    joint(text) {
+        const rect = text.getBoundingRect();
+        const intersection = arcRectPoint(this.arc.cascade, rect);
+
+        return intersection.length > 0 ? intersection : [this.arc.cascade[2][0], this.arc.cascade[2][1]];
+    }
+
+    getBoundingRect() {
+        const minX = Math.min(this.A[0], this.B[0], this.C[0]);
+        const maxX = Math.max(this.A[0], this.B[0], this.C[0]);
+        const minY = Math.min(this.A[1], this.B[1], this.C[1]);
+        const maxY = Math.max(this.A[1], this.B[1], this.C[1]);
+
+        return [minX, minY, maxX - minX, maxY - minY];
+    }
+
+    draw() {
+        this.ctx.lineTo(...this.A);
+        this.ctx.lineTo(...this.B);
+        this.ctx.lineTo(...this.C);
+    }
 }
 
 export class Text {
@@ -110,4 +151,20 @@ export class Text {
             this.ctx.fillText(this.lines[i], x, y);
         }
     }
+}
+
+export function calculatePositionsForLabel(arrowHead) {
+    const [ax1, ay1] = [arrowHead.A[0] - arrowHead.C[0], arrowHead.A[1] - arrowHead.C[1]];
+    const [ax2, ay2] = [arrowHead.B[0] - arrowHead.C[0], arrowHead.B[1] - arrowHead.C[1]];
+
+    const [x, y] = [arrowHead.arcX, arrowHead.arcY];
+    const [ax3, ay3] = [arrowHead.B[0] - x, arrowHead.B[1] - y];
+    const [ax4, ay4] = [arrowHead.B[0] - x, arrowHead.B[1] - y];
+
+    return [
+        [arrowHead.C[0] + 2.5 * ax1, arrowHead.C[1] + 2.5 * ay1],
+        [arrowHead.C[0] + 2.5 * ax2, arrowHead.C[1] + 2.5 * ay2],
+        [x + 3.5 * ax3, y + 3.5 * ay3],
+        [x + 3.5 * ax4, y + 3.5 * ay4]
+    ]
 }
