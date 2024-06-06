@@ -3,11 +3,6 @@
     --green: #138a07;
     --dark-green: #246B1E;
     --light-gray: #E7E9EE;
-
-    --blue: #2780e3;
-    --dark-blue: #1967BF;
-    --gray: #F5F5F5;
-    --dark-gray: #C9C9C9;
 }
 
 .codeflask__flatten {
@@ -17,6 +12,14 @@
 .codeflask__flatten,
 .codeflask__lines__line {
     font-size: 18px !important;
+}
+
+.language-cldlang .name {
+    color: #0000FF;
+}
+
+.language-cldlang .positive, .negative, .default {
+    color: #C73544;
 }
 
 body {

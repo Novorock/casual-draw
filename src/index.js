@@ -1,9 +1,29 @@
 import { compile } from "./compile.js";
 
+Prism.languages["cldlang"] = {
+    "name": [
+        /@\w[\w\d]*/
+    ],
+    "text": [
+        /\([\w\d\ ]*\)/,
+        /\[[\w\d\ ]*\]/
+    ],
+    "positive": [
+        /(\|\|)?\+>/
+    ],
+    "negative": [
+        /(\|\|)?->/
+    ],
+    "default": [
+        /(\|\|)?>/
+    ]
+};
+
 const editor = document.getElementById("editor");
 const flask = new CodeFlask(editor, {
-    language: "js",
-    lineNumbers: true
+    language: "cldlang",
+    lineNumbers: true,
+    defaultTheme: false
 });
 
 flask.updateCode("@A1(1) > @A5(5) > @A2(2) +> A1;\n@A3(3) > @A4(4) > @A6(6) +> A3;\nA4 -> A2;");

@@ -244,7 +244,6 @@ class SolvingStackMachine {
 }
 
 export class Translator {
-    private src: string;
     private ssm: SolvingStackMachine;
     private vertexPool: LxVertexPool;
     private linkPool: LxLinkPool;
@@ -355,10 +354,7 @@ export class Translator {
             throw CLOSE_BRACK_EXPECTED(str, next);
         }
 
-        // Text description expected
         throw UNEXPECTED_TOKEN(str, next);
-
-        // Take alias name as text description
     }
 
     private lexArrow(str: string, pos: number): number {
@@ -425,7 +421,6 @@ export class Translator {
     }
 
     public translate(str: string) {
-        this.src = str;
         this.ssm = new SolvingStackMachine();
         this.vertexPool = new LxVertexPool();
         this.linkPool = new LxLinkPool();
