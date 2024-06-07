@@ -6,7 +6,7 @@ const ARROW_DEF_EXPECTED = (str: string, pos: number) => new Error(`Expected arr
 
 class LxVertex {
     public text: string;
-    public bounded: boolean;
+    public framed: boolean;
 
     constructor(text: string) {
         this.text = text;
@@ -129,7 +129,7 @@ class LxText implements LxToken, LxOperand {
 
 class LxAlias implements LxToken, LxOperation {
     private pool: LxVertexPool;
-    private bounded: boolean;
+    private framed: boolean;
 
     constructor(pool: LxVertexPool) {
         this.pool = pool;
@@ -141,8 +141,8 @@ class LxAlias implements LxToken, LxOperation {
 
         const lxVertex = new LxVertex(right.text);
 
-        if (this.bounded)
-            lxVertex.bounded = true;
+        if (this.framed)
+            lxVertex.framed = true;
 
         this.pool.put(left.name, lxVertex);
 
@@ -153,8 +153,8 @@ class LxAlias implements LxToken, LxOperation {
         return 2;
     }
 
-    public setBounded() {
-        this.bounded = true;
+    public setFramed() {
+        this.framed = true;
     }
 }
 
@@ -346,7 +346,7 @@ export class Translator {
 
             if (str[next] === ']') {
                 const lxAlias = new LxAlias(this.vertexPool);
-                lxAlias.setBounded();
+                lxAlias.setFramed();
                 this.ssm.push(lxAlias);
                 return next + 1;
             }

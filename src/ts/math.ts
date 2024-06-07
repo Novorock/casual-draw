@@ -236,20 +236,3 @@ export function hasIntersection(rect1: number[], rect2: number[]) {
 
     return false;
 }
-
-export function placeInCenterOfScreen(x: number[], y: number[], width: number, height: number): number[][] {
-    const x0 = width / 2;
-    const minX = Math.min(...x);
-    const originX = minX + (Math.max(...x) - minX) / 2;
-    const offsetX = x0 - originX;
-
-    const y0 = height / 2;
-    const minY = Math.min(...y);
-    const originY = minY + (Math.max(...y) - minY) / 2;
-    const offsetY = y0 - originY;
-
-    return [
-        x.map(el => el + offsetX),
-        y.map(el => el + offsetY)
-    ]
-}

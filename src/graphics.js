@@ -1,10 +1,17 @@
-import { circleCenter, distance, det, arg, isLeftTriple, arcRectPoint } from "../lib/math.js";
+import { circleCenter, distance, det, arg, isLeftTriple, arcRectPoint, normal } from "../lib/math.js";
 
 export class Arc {
     constructor(ctx, cascade) {
         this.ctx = ctx;
 
         let [[x1, y1], [x2, y2], [x3, y3]] = cascade;
+
+        if (isNaN(x2) || isNaN(y2)) {
+            const [nx, ny] = normal([x1, y1], [x3, y3]);
+            const l = distance([x3 - x1, y3 - y1]) / 12;
+            [x2, y2] = [(x1 + x3) / 2 + l * nx, (y1 + y3) / 2 + l * ny];
+        }
+
         const [ax, ay] = [x2 - x1, y2 - y1];
 
         if (Math.abs(det([[ax, ay], [x3 - x2, y3 - y2]])) < 0.08) {
