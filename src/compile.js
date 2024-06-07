@@ -2,7 +2,7 @@ import { Translator, LxLinkHead } from "../lib/lexer.js";
 import { KKLayout } from "../lib/layout/kamada.js";
 import { distance, hasIntersection } from "../lib/math.js";
 import { FRLayout } from "../lib/layout/fruchterman.js";
-import { Text, Arc, ArrowHead, calculatePositionsForLabel } from "./graphics.js";
+import { Text, Arc, ArrowHead, calculatePositionsForLabel, Delay } from "./graphics.js";
 
 const errorContainer = document.getElementById("error-container");
 const errorWindow = document.getElementById("error-window");
@@ -94,8 +94,14 @@ export function compile(str) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        const delayResolver = new EdgeDelayResolver(vertexPool, linkPool);
+
         for (let edge of edges) {
-            new CausalEdge(ctx, colorResolver.resolveColorFor(edge).hex, edge.map(v => [x[v], y[v]])).draw();
+            const causalEdge = new CausalEdge(ctx, colorResolver.resolveColorFor(edge).hex, edge.map(v => [x[v], y[v]]));
+            causalEdge.draw();
+
+            if (delayResolver.resolveDelayFor(edge))
+                new Delay(ctx, causalEdge.getArc()).draw();
 
             for (let index of edge) {
                 if (!layout.isDummy(index)) {
@@ -122,21 +128,16 @@ export function compile(str) {
         const polarityResolver = new EdgePolarityResolver(vertexPool, linkPool);
 
         for (let edge of edges) {
-            let [i1, i2, i3] = edge;
-            const [p1, p2, p3] = [[x[i1], y[i1]], [x[i2], y[i2]], [x[i3], y[i3]]];
+            const color = colorResolver.resolveColorFor(edge).hex;
+            const causalArrowHead = new CausalArrowHead(ctx, color, edge.map(v => [x[v], y[v]]), vertToText.get(edge[2]))
 
-            const arrowHead = new ArrowHead(ctx, new Arc(ctx, [p1, p2, p3]), vertToText.get(i3), 15);
+            causalArrowHead.draw();
+
+            const arrowHead = causalArrowHead.getArrowHead();
             labelResolver.registerElement(arrowHead);
 
-            ctx.fillStyle = ctx.strokeStyle = colorResolver.resolveColorFor(edge).hex;
-
-            ctx.beginPath();
-            arrowHead.draw();
-            ctx.stroke();
-            ctx.fill();
-
             const symbol = polarityResolver.resolvePolarityFor(edge).symbol;
-            const label = labelResolver.resolveLabelFor(arrowHead, symbol);
+            const label = labelResolver.resolveLabelFor(arrowHead, symbol, color);
 
             if (label)
                 label.draw();
@@ -197,15 +198,34 @@ class CausalEdge {
     constructor(ctx, color, cascade) {
         this.ctx = ctx;
         this.color = color;
-        this.cascade = cascade;
+        this.arc = new Arc(ctx, cascade);
+    }
+
+    getArc() {
+        return this.arc;
     }
 
     draw() {
         this.ctx.strokeStyle = this.color;
         this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        new Arc(this.ctx, this.cascade).draw();
-        this.ctx.stroke();
+        this.arc.draw();
+    }
+}
+
+class CausalArrowHead {
+    constructor(ctx, color, cascade, stickTo) {
+        this.ctx = ctx;
+        this.color = color;
+        this.arrowHead = new ArrowHead(ctx, new Arc(ctx, cascade), stickTo, 15);
+    }
+
+    getArrowHead() {
+        return this.arrowHead;
+    }
+
+    draw() {
+        this.ctx.fillStyle = this.ctx.strokeStyle = this.color;
+        this.arrowHead.draw();
     }
 }
 
@@ -245,7 +265,7 @@ class CausalVertex {
 }
 
 class LabelResolver {
-    constructor(ctx,) {
+    constructor(ctx) {
         this.ctx = ctx;
         this.elements = [];
     }
@@ -254,7 +274,9 @@ class LabelResolver {
         this.elements.push(element);
     }
 
-    resolveLabelFor(arrowHead, symbol) {
+    resolveLabelFor(arrowHead, symbol, color) {
+        this.ctx.strokeStyle = color;
+
         if (symbol != null) {
             const attempts = calculatePositionsForLabel(arrowHead);
 
@@ -407,6 +429,32 @@ class EdgePolarityResolver {
         if (this.edge2Polarity.has(hash))
             return this.edge2Polarity.get(hash);
 
-        throw new Error(`Unknown color for ${hash}`);
+        throw new Error(`Unknown polarity for ${hash}`);
+    }
+}
+
+class EdgeDelayResolver {
+    constructor(vertexPool, linkPool) {
+        this.edge2Delay = new Map();
+
+        for (let link of linkPool.asArray()) {
+            const left = vertexPool.getIndex(link.left);
+            const right = vertexPool.getIndex(link.right);
+
+            this.edge2Delay.set(this.hash(left, right), link.delayed);
+        }
+    }
+
+    hash(left, right) {
+        return (100 + left) * 100 + right;
+    }
+
+    resolveDelayFor(edge) {
+        const hash = this.hash(edge[0], edge[2]);
+
+        if (this.edge2Delay.has(hash))
+            return this.edge2Delay.get(hash);
+
+        throw new Error(`Unknown delay for ${hash}`);
     }
 }

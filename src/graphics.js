@@ -45,12 +45,16 @@ export class Arc {
     }
 
     draw() {
+        this.ctx.beginPath();
+
         if (this.isNearStraightLine) {
             this.ctx.moveTo(this.cascade[0][0], this.cascade[0][1]);
             this.ctx.lineTo(this.cascade[1][0], this.cascade[1][1]);
         } else {
             this.ctx.arc(this.x, this.y, this.r, this.theta1, this.theta2);
         }
+
+        this.ctx.stroke();
     }
 }
 
@@ -101,9 +105,12 @@ export class ArrowHead {
     }
 
     draw() {
+        this.ctx.beginPath();
         this.ctx.lineTo(...this.A);
         this.ctx.lineTo(...this.B);
         this.ctx.lineTo(...this.C);
+        this.ctx.stroke();
+        this.ctx.fill();
     }
 }
 
@@ -174,4 +181,43 @@ export function calculatePositionsForLabel(arrowHead) {
         [x + 3.5 * ax3, y + 3.5 * ay3],
         [x + 3.5 * ax4, y + 3.5 * ay4]
     ]
+}
+
+export class Delay {
+    constructor(ctx, arc) {
+        this.ctx = ctx;
+        this.arc = arc;
+
+        const [[x1, y1], [x2, y2], [x3, y3]] = arc.cascade;
+
+        let [ax, ay] = [x3 - x1, y3 - y1];
+        const la = distance([ax, ay]);
+        [ax, ay] = [ax / la, ay / la];
+
+        const [nx, ny] = normal([x1, y1], [x3, y3]);
+        const [x4, y4] = [x2 + 10 * nx, y2 + 10 * ny];
+        const [x5, y5] = [x2 - 10 * nx, y2 - 10 * ny];
+
+        this.line1 = [
+            [x4 + 2 * ax, y4 + 2 * ay],
+            [x5 + 2 * ax, y5 + 2 * ay]
+        ];
+
+        this.line2 = [
+            [x4 - 2 * ax, y4 - 2 * ay],
+            [x5 - 2 * ax, y5 - 2 * ay]
+        ];
+    }
+
+    draw() {
+        this.ctx.beginPath();
+        this.ctx.moveTo(...this.line1[0]);
+        this.ctx.lineTo(...this.line1[1]);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(...this.line2[0]);
+        this.ctx.lineTo(...this.line2[1]);
+        this.ctx.stroke();
+    }
 }

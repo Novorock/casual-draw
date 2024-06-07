@@ -161,12 +161,10 @@ class LxAlias implements LxToken, LxOperation {
 class LxArrow implements LxToken, LxOperation {
     private head: LxLinkHead;
     private delayed: boolean;
-    private vertexPool: LxVertexPool;
     private linkPool: LxLinkPool;
 
-    constructor(head: LxLinkHead, vertexPool: LxVertexPool, linkPool: LxLinkPool) {
+    constructor(head: LxLinkHead, linkPool: LxLinkPool) {
         this.head = head;
-        this.vertexPool = vertexPool;
         this.linkPool = linkPool;
     }
 
@@ -381,7 +379,7 @@ export class Translator {
         }
 
         if (str[next] === '>') {
-            const operation = new LxArrow(head, this.vertexPool, this.linkPool);
+            const operation = new LxArrow(head, this.linkPool);
 
             if (delayed)
                 operation.setDelayed();
