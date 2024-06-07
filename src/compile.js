@@ -54,7 +54,7 @@ class CompileErrorNotification {
                 i++;
             }
 
-            this.messages.push(`Problem is at sequence near row: ${row}, col: ${col}`);
+            this.messages.push(`The problem is a sequence, starting from row: ${row}, col: ${col}`);
         }
     }
 

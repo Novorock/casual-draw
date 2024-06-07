@@ -88,22 +88,39 @@ compileButton.onclick = (e) => {
     callToCompile();
 };
 
-// Prototype
-// const errorToggle = document.getElementById("log-error-toggle");
-// const errorToggleTooltip = document.getElementById("log-error-tooltip");
+function exportCanvasAsPNG(id, fileName) {
+    var canvasElement = document.getElementById(id);
+    var MIME_TYPE = "image/png";
+    var imgURL = canvasElement.toDataURL(MIME_TYPE);
 
-// var toggleOn = false;
+    var dlLink = document.createElement('a');
+    dlLink.download = fileName;
+    dlLink.href = imgURL;
+    dlLink.dataset.downloadurl = [MIME_TYPE, dlLink.download, dlLink.href].join(':');
 
-// errorToggle.onclick = (e) => {
-//     toggleOn = !toggleOn;
-// };
+    document.body.appendChild(dlLink);
+    dlLink.click();
+    document.body.removeChild(dlLink);
+}
 
-// errorToggle.onmouseover = (e) => {
-//     errorToggleTooltip.style.visibility = "visible";
-//     errorToggleTooltip.style.opacity = 0.8;
-// }
+const exportButton = document.getElementById("export-button")
+const exportButtonTooltip = document.getElementById("export-button-tooltip");
 
-// errorToggle.onmouseout = (e) => {
-//     errorToggleTooltip.style.visibility = "hidden";
-//     errorToggleTooltip.style.opacity = 0;
-// }
+exportButton.onmouseover = (e) => {
+    exportButtonTooltip.style.visibility = "visible";
+    exportButtonTooltip.style.opacity = 0.8;
+}
+
+exportButton.onmouseout = (e) => {
+    exportButtonTooltip.style.visibility = "hidden";
+    exportButtonTooltip.style.opacity = 0;
+}
+
+exportButton.onclick = (e) => {
+    const now = new Date();
+    exportCanvasAsPNG("canvas", `causal-loop-${now.getDay()}-${now.getHours()}-${now.getSeconds()}`);
+};
+
+
+
+
