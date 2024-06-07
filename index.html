@@ -14,7 +14,6 @@
                     <span>Code Editor</span>
                 </div>
 
-
                 <div class="section-header-button-bar">
                     <button id="compile-button">
                         <span>Compile</span>
@@ -32,9 +31,25 @@
                 <div class="section-header-title">
                     <span>Diagram</span>
                 </div>
+
+                <div class="section-header-button-bar">
+                    <!-- <div class="tooltip">
+                        <button id="log-error-toggle">
+                            <span>Error</span>
+                        </button>
+
+                        <span class="tooltip-text" id="log-error-tooltip">Log of errors</span>
+                    </div> -->
+                </div>
             </div>
 
-            <div>
+            <div id="error-container">
+                <div id="error-window">
+                    <div class="error-line"></div>
+                </div>
+            </div>
+
+            <div id="canvas-container">
                 <canvas id="canvas" width="200" height="200"></canvas>
             </div>
         </div>

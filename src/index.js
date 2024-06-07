@@ -87,3 +87,23 @@ const compileButton = document.getElementById("compile-button");
 compileButton.onclick = (e) => {
     callToCompile();
 };
+
+// Prototype
+// const errorToggle = document.getElementById("log-error-toggle");
+// const errorToggleTooltip = document.getElementById("log-error-tooltip");
+
+// var toggleOn = false;
+
+// errorToggle.onclick = (e) => {
+//     toggleOn = !toggleOn;
+// };
+
+// errorToggle.onmouseover = (e) => {
+//     errorToggleTooltip.style.visibility = "visible";
+//     errorToggleTooltip.style.opacity = 0.8;
+// }
+
+// errorToggle.onmouseout = (e) => {
+//     errorToggleTooltip.style.visibility = "hidden";
+//     errorToggleTooltip.style.opacity = 0;
+// }

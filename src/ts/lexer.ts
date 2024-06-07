@@ -37,7 +37,7 @@ export class LxVertexPool {
 
     getVertexByName(name: string) {
         if (!this.name2Vertex.has(name))
-            throw new Error(`Variable with name ${name} is not defined.`);
+            throw new Error(`Variable with name '${name}' is not defined.`);
 
         return this.name2Vertex.get(name);
     }
@@ -51,7 +51,7 @@ export class LxVertexPool {
 
     public getIndex(name: string): number {
         if (!this.name2Vertex.has(name))
-            throw new Error(`Variable with name ${name} is not defined.`);
+            throw new Error(`Variable with name '${name}' is not defined.`);
 
         return this.name2Index.get(name);
     }
