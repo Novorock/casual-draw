@@ -1,0 +1,19 @@
+{
+  "name": "casual-draw",
+  "version": "0.0.1",
+  "description": "Web-application to generate Causal Loop Diagram",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Pavel Chemarmazovich",
+  "license": "ISC",
+  "dependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^5.4.5"
+  }
+}
