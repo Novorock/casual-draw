@@ -122,6 +122,22 @@ export class FRLayout {
         }
     }
 
+    public getX() {
+        return this.vertices.map(v => v.x);
+    }
+
+    public getY() {
+        return this.vertices.map(v => v.y);
+    }
+
+    public getLayout() {
+        return this.layout;
+    }
+
+    public getDummiesIndices() {
+        return this.dummiesIndices;
+    }
+
     private attrativeForce(x: number): number {
         return Math.pow(x, 2) / this.k;
     }
@@ -166,21 +182,5 @@ export class FRLayout {
             u.dispX += (deltaX / delta) * attractiveF;
             u.dispY += (deltaY / delta) * attractiveF
         }
-    }
-
-    getX() {
-        return this.vertices.map(v => v.x);
-    }
-
-    getY() {
-        return this.vertices.map(v => v.y);
-    }
-
-    getLayout() {
-        return this.layout;
-    }
-
-    getDummiesIndices() {
-        return this.dummiesIndices;
     }
 }

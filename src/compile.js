@@ -74,7 +74,7 @@ export function compile(str) {
 
     const traslator = new Translator();
 
-    // try {
+    try {
         traslator.translate(str);
 
         const vertexPool = traslator.getVertexPool();
@@ -142,15 +142,15 @@ export function compile(str) {
             if (label)
                 label.draw();
         }
-    // } catch (e) {
-    //     const notification = new CompileErrorNotification(str, e);
-    //     notification.show();
-    // }
+    } catch (e) {
+        const notification = new CompileErrorNotification(str, e);
+        notification.show();
+    }
 }
 
 class Layout {
     constructor(vertexPool, linkPool, screenWidth, screenHeight) {
-        const l = 850;
+        const l = 750;
         const kklayout = new KKLayout(new AdjacencyMatrix(vertexPool, linkPool).matrix, l, 10);
         kklayout.run();
 

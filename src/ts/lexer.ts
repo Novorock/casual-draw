@@ -35,14 +35,14 @@ export class LxVertexPool {
         this.index2Vertex.set(this.next++, v);
     }
 
-    getVertexByName(name: string) {
+    public getVertexByName(name: string): LxVertex {
         if (!this.name2Vertex.has(name))
             throw new Error(`Variable with name '${name}' is not defined.`);
 
         return this.name2Vertex.get(name);
     }
 
-    getVertexByIndex(index: number) {
+    public getVertexByIndex(index: number): LxVertex {
         if (!this.index2Vertex.has(index))
             throw new Error(`Variable with index ${index} is not defined.`);
 
@@ -95,7 +95,7 @@ export class LxLinkPool {
         this.pool.push(link);
     }
 
-    public asArray() {
+    public asArray(): Array<LxLink> {
         return this.pool;
     }
 }
